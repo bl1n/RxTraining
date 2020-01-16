@@ -7,10 +7,8 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.activity_main.*
 import team.lf.rxtraining.data.createObservableListLong
 import team.lf.rxtraining.data.getObservableProfileById
-import team.lf.rxtraining.data.model.Profile
 
 /**
  * Придумать кейсы и реализовать их на тестовых данных. Например:
@@ -36,18 +34,16 @@ class MainActivity : AppCompatActivity() {
             .subscribeOn(Schedulers.io())
             .flatMap {
                 Observable.fromIterable(it)
-                    .flatMap { id ->
-                        getObservableProfileById(id)
-                    }
             }
-            .toList()
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { list: MutableList<Profile>, error: Throwable ->
-                run {
-                    val message = list.size.toString()
+            .flatMap {
+                getObservableProfileById(it)
+            }
+            .flatMap {
 
-                    profiles.text = message
-                }
+            }
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                Log.d("TAG", it.name)
             }
 
     }
