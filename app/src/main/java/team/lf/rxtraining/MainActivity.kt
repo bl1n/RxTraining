@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.toObservable
+import io.reactivex.schedulers.Schedulers
 
 /**
  * Придумать кейсы и реализовать их на тестовых данных. Например:
@@ -38,17 +40,14 @@ class MainActivity : AppCompatActivity() {
             return list.toList()
         }
 
-        fun getListLong(count: Long, error: Boolean = false): Observable<List<Long>> {
-            if (error) throw IllegalStateException("exception")
+        fun getListLong(count: Long, exception: Boolean = false): Observable<List<Long>> {
+            if (exception) throw IllegalStateException("longs exception")
             return listOf(createLongList(count)).toObservable()
         }
 
-        fun getProfileById(id: Long, error: Boolean = false): Observable<Profile> {
-            if (error) throw IllegalStateException("exception")
-//            Log.d("TAG", "profile $id is created")
-            return Observable.create {
-                Profile(id, "name $id")
-            }
+        fun getProfileById(id: Long, exception: Boolean = false): Profile {
+            if (exception) throw IllegalStateException("profile exception")
+            return Profile(id, "name $id")
         }
     }
 
@@ -58,16 +57,25 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         disposable = FakeRepository.getListLong(100)
-            .flatMap {
-                Observable.fromIterable(it)
+            .subscribeOn(Schedulers.io())
+            .flatMap {list:List<Long> ->
+                Observable.fromIterable(list)
             }
-            .flatMap {
-                Observable.just(FakeRepository.getProfileById(it))
+            .flatMap {id:Long->
+                Observable.just(FakeRepository.getProfileById(id))
             }
             .toList()
-            .subscribe {
-                t1, t2 -> Log.d("TAG", t1.size.toString())
+            .observeOn(AndroidSchedulers.mainThread())
+            .doOnError{
+                showError(it)
             }
+            .subscribe {
+                    list: List<Profile> -> Log.d("TAG", list.size.toString())
+            }
+    }
+
+    private fun showError(it: Throwable?) {
+        Log.d("TAG", it?.message.toString())
     }
 
     override fun onDestroy() {
