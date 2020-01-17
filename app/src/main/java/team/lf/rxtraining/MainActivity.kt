@@ -4,13 +4,8 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import io.reactivex.functions.Consumer
 import io.reactivex.rxkotlin.toObservable
-import io.reactivex.schedulers.Schedulers
-import java.lang.IllegalStateException
-import kotlin.random.Random
 
 /**
  * Придумать кейсы и реализовать их на тестовых данных. Например:
@@ -63,17 +58,15 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         disposable = FakeRepository.getListLong(100)
-            .subscribeOn(Schedulers.io())
-            .flatMap {list: List<Long>->
-                Observable.fromIterable(list)
+            .flatMap {
+                Observable.fromIterable(it)
             }
-            .flatMap {id:Long->
-                FakeRepository.getProfileById(id)
+            .flatMap {
+                Observable.just(FakeRepository.getProfileById(it))
             }
             .toList()
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { list: List<Profile>->
-                Log.d("TAG", list.size.toString())
+            .subscribe {
+                t1, t2 -> Log.d("TAG", t1.size.toString())
             }
     }
 
