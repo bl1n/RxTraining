@@ -59,9 +59,11 @@ class MainActivity : AppCompatActivity() {
         disposable = FakeRepository.getListLong(100)
             .subscribeOn(Schedulers.io())
             .flatMap {list:List<Long> ->
+                Log.d("TAG", "long list size ${list.size}")
                 Observable.fromIterable(list)
             }
             .flatMap {id:Long->
+                Log.d("TAG", "id is $id")
                 Observable.just(FakeRepository.getProfileById(id))
             }
             .toList()
