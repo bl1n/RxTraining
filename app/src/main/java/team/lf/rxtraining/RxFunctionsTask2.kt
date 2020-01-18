@@ -11,7 +11,7 @@ fun main() {
     val disposable = Observable.zip(
         nameObservable,
         ageObservable,
-        BiFunction(::User)
+        BiFunction { name: String, age: Int -> User(name, age) }
     )
         .subscribe{
             println(it)
