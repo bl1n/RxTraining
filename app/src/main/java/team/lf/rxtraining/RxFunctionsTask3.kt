@@ -1,7 +1,6 @@
 package team.lf.rxtraining
 
 import io.reactivex.Observable
-import io.reactivex.schedulers.Schedulers
 
 data class FirstType(val id: Int)
 data class SecondType(val id: Int)
