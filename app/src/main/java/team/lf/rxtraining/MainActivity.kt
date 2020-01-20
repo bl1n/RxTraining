@@ -56,24 +56,28 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        disposable = FakeRepository.getListLong(100)
-            .subscribeOn(Schedulers.io())
-            .flatMap {list:List<Long> ->
-                Log.d("TAG", "long list size ${list.size}")
-                Observable.fromIterable(list)
-            }
-            .flatMap {id:Long->
-                Log.d("TAG", "id is $id")
-                Observable.just(FakeRepository.getProfileById(id))
-            }
-            .toList()
-            .observeOn(AndroidSchedulers.mainThread())
-            .doOnError{
-                showError(it)
-            }
-            .subscribe {
-                    list: List<Profile> -> Log.d("TAG", list.size.toString())
-            }
+//        disposable = FakeRepository.getListLong(100)
+//            .subscribeOn(Schedulers.io())
+//            .flatMap {list:List<Long> ->
+//                Log.d("TAG", "long list size ${list.size}")
+//                Observable.fromIterable(list)
+//            }
+//            .flatMap {id:Long->
+//                Log.d("TAG", "id is $id")
+//                Observable.just(FakeRepository.getProfileById(id))
+//            }
+//            .toList()
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .doOnError{
+//                showError(it)
+//            }
+//            .subscribe {
+//                    list: List<Profile> -> Log.d("TAG", list.size.toString())
+//            }
+//        disposable = Observable.merge(createObservable<FirstType>(10, false), createObservable<SecondType>(10,false))
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe()
     }
 
     private fun showError(it: Throwable?) {

@@ -1,62 +1,58 @@
 package team.lf.rxtraining
 
 import io.reactivex.Observable
-import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 
-val compositeDisposable = CompositeDisposable()
+data class FirstType(val id: Int)
+data class SecondType(val id: Int)
+data class ThirdType(val id: Int)
+data class FourthType(val id: Int)
+data class FifthType(val id: Int)
+
 
 fun main() {
-    compositeDisposable.add(
-        Observable
-            .mergeDelayError(
-                getFirstObservable(false)
-                    .mergeWith(getSecondObservable(false))
-                    .doOnError {
-                        compositeDisposable.dispose()
-                        showFullScreenError()
-                    }
-                , getThirdObservable(false)
-            )
-            .doOnError {
-                compositeDisposable.dispose()
-                showHalfScreenError()
-            }
-            .concatWith(
-                getFourthObservable()
-                    .concatWith(getFifthObservable())
-            )
-            .subscribe {
-                println(it)
-            }
+    val first = createObservable<FirstType>(5, true).doOnError { showFullScreenError() }
+    val second = createObservable<SecondType>(5, false).doOnError { showFullScreenError() }
+    val third = createObservable<ThirdType>(5, false).doOnError { showHalfScreenError() }
+    val fourth = createObservable<FourthType>(5, false)
+    val fifth = createObservable<FifthType>(5, false)
+
+    val disposable = Observable.merge(
+        Observable.mergeDelayError(
+            Observable.merge(first, second),
+            third
+        ),
+        Observable.mergeDelayError(fourth, fifth)
     )
+        .subscribe({}, { println(it.message) }, {})
+
 }
 
-
-fun getFirstObservable(exception: Boolean): Observable<Int> =
-    if (exception) throw IllegalStateException("first exception")
-    else Observable.just(1, 1, 1, 1)
-
-
-fun getSecondObservable(exception: Boolean): Observable<Int> =
-    if (exception) throw IllegalStateException("second exception")
-    else Observable.just(2, 2, 2, 2)
-
-
-fun getThirdObservable(exception: Boolean): Observable<Int> =
-    if (exception) throw IllegalStateException("third exception")
-    else Observable.just(3, 3, 3, 3)
-
-fun getFourthObservable() = Observable.just(4, 4, 4, 4)
-
-fun getFifthObservable() = Observable.just(5, 5, 5, 5)
-
+inline fun <reified T> createObservable(
+    count: Int,
+    exception: Boolean
+): Observable<T> =
+    Observable.create<T> { emitter ->
+        var c = 0
+        while (!emitter.isDisposed) {
+            if (exception) {
+                emitter.onError(IllegalStateException("${T::class.java.simpleName} exception"))
+                break
+            }
+            val id = c++
+            emitter.onNext(T::class.constructors.first().call(id))
+            if (c == count) {
+                emitter.onComplete()
+            }
+        }
+    }.doOnComplete { println("${T::class.java.simpleName} complete") }.doOnNext { println("$it") }
 
 fun showHalfScreenError() {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    println("Half screen error")
 }
 
 fun showFullScreenError() {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    println("Full screen error")
 }
 
 
