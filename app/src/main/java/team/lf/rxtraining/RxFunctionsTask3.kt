@@ -11,13 +11,13 @@ data class FifthType(val id: Int)
 
 
 fun main() {
-    val first = createObservable<FirstType>(5, true).doOnError { showFullScreenError() }
+    val first = createObservable<FirstType>(5, false).doOnError { showFullScreenError() }
     val second = createObservable<SecondType>(5, false).doOnError { showFullScreenError() }
     val third = createObservable<ThirdType>(5, false).doOnError { showHalfScreenError() }
     val fourth = createObservable<FourthType>(5, false)
     val fifth = createObservable<FifthType>(5, false)
 
-    val disposable = Observable.merge(
+    val disposable = Observable.concat(
         Observable.mergeDelayError(
             Observable.merge(first, second),
             third
@@ -25,7 +25,6 @@ fun main() {
         Observable.mergeDelayError(fourth, fifth)
     )
         .subscribe({}, { println(it.message) }, {})
-
 }
 
 inline fun <reified T> createObservable(
